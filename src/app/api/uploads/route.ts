@@ -26,6 +26,16 @@ const splitter = new RecursiveCharacterTextSplitter({
 });
 
 export async function POST(req: Request) {
+  // Disable file uploads on Vercel - use cloud document processing instead
+  if (process.env.VERCEL) {
+    return NextResponse.json(
+      { 
+        message: 'File uploads are not available on Vercel deployment. Please use URL-based document processing or upgrade to a platform with file storage capabilities.' 
+      },
+      { status: 501 }
+    );
+  }
+  
   try {
     const formData = await req.formData();
 

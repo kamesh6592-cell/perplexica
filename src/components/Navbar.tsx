@@ -9,7 +9,18 @@ import {
   PopoverPanel,
   Transition,
 } from '@headlessui/react';
-import jsPDF from 'jspdf';
+// Conditional jsPDF import - only load on non-Vercel environments
+let jsPDF: any = null;
+const isVercelBuild = process.env.VERCEL || process.env.NEXT_PHASE === 'phase-production-build';
+
+if (!isVercelBuild) {
+  try {
+    const jsPDFModule = require('jspdf');
+    jsPDF = jsPDFModule.default || jsPDFModule;
+  } catch (error) {
+    console.warn('jsPDF not available in this environment');
+  }
+}
 import { useChat, Section } from '@/lib/hooks/useChat';
 
 const downloadFile = (filename: string, content: string, type: string) => {
@@ -67,6 +78,11 @@ const exportAsMarkdown = (sections: Section[], title: string) => {
 };
 
 const exportAsPDF = (sections: Section[], title: string) => {
+  if (!jsPDF) {
+    alert('PDF export is not available in this environment. Please use Markdown export instead.');
+    return;
+  }
+  
   const doc = new jsPDF();
   const date = new Date(
     sections[0]?.userMessage?.createdAt || Date.now(),
@@ -286,20 +302,22 @@ const Navbar = () => {
                           </p>
                         </div>
                       </button>
-                      <button
-                        className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary transition-colors duration-200"
-                        onClick={() => exportAsPDF(sections, title || '')}
-                      >
-                        <FileDown size={16} className="text-[#24A0ED]" />
-                        <div>
-                          <p className="text-sm font-medium text-black dark:text-white">
-                            PDF
-                          </p>
-                          <p className="text-xs text-black/50 dark:text-white/50">
-                            Document format
-                          </p>
-                        </div>
-                      </button>
+                      {!isVercelBuild && jsPDF && (
+                        <button
+                          className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary transition-colors duration-200"
+                          onClick={() => exportAsPDF(sections, title || '')}
+                        >
+                          <FileDown size={16} className="text-[#24A0ED]" />
+                          <div>
+                            <p className="text-sm font-medium text-black dark:text-white">
+                              PDF
+                            </p>
+                            <p className="text-xs text-black/50 dark:text-white/50">
+                              Document format
+                            </p>
+                          </div>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </PopoverPanel>

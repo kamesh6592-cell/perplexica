@@ -18,6 +18,11 @@ import { File as FileType } from '../ChatWindow';
 import { useChat } from '@/lib/hooks/useChat';
 
 const AttachSmall = () => {
+  // Disable file attachments on Vercel - cloud-only deployment
+  if (process.env.NEXT_PUBLIC_VERCEL || typeof window !== 'undefined' && window.location.hostname.includes('vercel')) {
+    return null;
+  }
+  
   const { files, setFiles, setFileIds, fileIds } = useChat();
 
   const [loading, setLoading] = useState(false);

@@ -28,6 +28,19 @@ const nextConfig = {
         os: false,
         stream: false,
         buffer: false,
+        // Handle missing optional dependencies
+        dompurify: false,
+        canvg: false,
+      };
+    }
+
+    // Handle optional dependencies for jsPDF on Vercel
+    if (process.env.VERCEL) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        dompurify: false,
+        canvg: false,
+        jspdf: false, // Disable jsPDF entirely on Vercel
       };
     }
 

@@ -44,3 +44,9 @@ node_modules/pytorch/
 node_modules/opencv/
 node_modules/face-api.js/
 node_modules/@xenova/
+
+# PDF and document processing (use cloud alternatives)
+node_modules/pdf-parse/
+node_modules/mammoth/
+node_modules/docx/
+node_modules/canvas/
