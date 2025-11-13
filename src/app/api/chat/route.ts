@@ -182,9 +182,9 @@ const handleHistorySave = async (
     where: eq(chats.id, message.chatId),
   });
 
-  // Only process file details if files exist and we're not in build mode
+  // Only process file details if files exist and uploads directory is available
   let fileData: ReturnType<typeof getFileDetails>[] = [];
-  if (files.length > 0 && process.env.NODE_ENV !== 'build') {
+  if (files.length > 0) {
     try {
       fileData = files.map(getFileDetails);
     } catch (error) {
