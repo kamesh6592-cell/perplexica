@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "SKIP_ENV_VALIDATION=1 next build",
-    "build:vercel": "npm install --production --ignore-optional --no-optional && SKIP_ENV_VALIDATION=1 next build",
+    "build:vercel": "npm ci && SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "next lint",
     "format:write": "prettier . --write",
@@ -35,7 +35,8 @@
     "drizzle-orm": "^0.40.1",
     "framer-motion": "^12.23.24",
     "html-to-text": "^9.0.5",
-
+    "better-sqlite3": "^11.9.1",
+    "pdf-parse": "^1.1.1",
     "langchain": "^1.0.1",
     "lucide-react": "^0.363.0",
 
@@ -54,11 +55,10 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-
+    "@types/better-sqlite3": "^7.6.12",
     "@types/html-to-text": "^9.0.4",
-
     "@types/node": "^24.8.1",
-
+    "@types/pdf-parse": "^1.1.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",

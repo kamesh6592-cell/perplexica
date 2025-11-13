@@ -46,17 +46,10 @@ const nextConfig = {
 
     // Aggressive optimization for Vercel deployment
     if (process.env.VERCEL && isServer) {
-      // Exclude ALL heavy packages from server bundle on Vercel
+      // Exclude only the largest packages from server bundle on Vercel
       const heavyPackages = [
         'onnxruntime-node',
         '@huggingface/transformers',
-        'better-sqlite3',
-        'sharp',
-        'canvas',
-        'pdf-parse',
-        'mammoth',
-        'jspdf',
-        '@langchain/community/document_loaders',
         '@langchain/community/embeddings/huggingface_transformers'
       ];
       
@@ -70,14 +63,10 @@ const nextConfig = {
           if (request && heavyPackages.some(pkg => request.includes(pkg))) {
             return callback(null, `commonjs ${request}`);
           }
-          // Also exclude node_modules with these patterns
+          // Also exclude node_modules with heavy ML patterns
           if (request && (
             request.includes('onnxruntime') || 
-            request.includes('transformers') || 
-            request.includes('sqlite') ||
-            request.includes('pdf-parse') ||
-            request.includes('mammoth') ||
-            request.includes('jspdf')
+            request.includes('@huggingface/transformers')
           )) {
             return callback(null, `commonjs ${request}`);
           }
@@ -85,15 +74,11 @@ const nextConfig = {
         }
       ];
       
-      // Override resolve to prevent loading these modules
+      // Override resolve to prevent loading heavy modules only
       config.resolve.alias = {
         ...config.resolve.alias,
         'onnxruntime-node': false,
         '@huggingface/transformers': false,
-        'better-sqlite3': false,
-        'pdf-parse': false,
-        'mammoth': false,
-        'jspdf': false,
       };
     }
 
