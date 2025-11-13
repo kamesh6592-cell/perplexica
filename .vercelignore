@@ -32,5 +32,15 @@ entrypoint.sh
 # Large dependencies that cause deployment issues
 node_modules/onnxruntime-node/
 node_modules/@huggingface/transformers/
+node_modules/better-sqlite3/
+node_modules/sharp/
+node_modules/canvas/
 uploads/
 data/
+
+# Additional heavy ML/AI packages
+node_modules/@tensorflow/
+node_modules/pytorch/
+node_modules/opencv/
+node_modules/face-api.js/
+node_modules/@xenova/

@@ -6,14 +6,18 @@ import { UIConfigField } from '@/lib/config/types';
 import { getConfiguredModelProviderById } from '@/lib/config/serverRegistry';
 
 // Conditional import for HuggingFaceTransformersEmbeddings
-let HuggingFaceTransformersEmbeddings: any;
-try {
-  // This will fail on Vercel but work locally
-  HuggingFaceTransformersEmbeddings = require('@langchain/community/embeddings/huggingface_transformers').HuggingFaceTransformersEmbeddings;
-} catch (error) {
-  // Fallback for environments where transformers are not available
-  console.warn('HuggingFace Transformers not available in this environment');
-  HuggingFaceTransformersEmbeddings = null;
+let HuggingFaceTransformersEmbeddings: any = null;
+
+// Only try to import on non-Vercel environments
+if (!process.env.VERCEL) {
+  try {
+    // This will fail on Vercel but work locally
+    HuggingFaceTransformersEmbeddings = require('@langchain/community/embeddings/huggingface_transformers').HuggingFaceTransformersEmbeddings;
+  } catch (error) {
+    // Fallback for environments where transformers are not available
+    console.warn('HuggingFace Transformers not available in this environment');
+    HuggingFaceTransformersEmbeddings = null;
+  }
 }
 interface TransformersConfig {}
 

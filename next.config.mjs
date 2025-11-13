@@ -31,10 +31,28 @@ const nextConfig = {
       };
     }
 
-    // Optimize for Vercel deployment
+    // Aggressive optimization for Vercel deployment
     if (process.env.VERCEL && isServer) {
-      // Exclude heavy packages from server bundle on Vercel
-      config.externals = [...(config.externals || []), 'onnxruntime-node'];
+      // Exclude all heavy packages from server bundle on Vercel
+      const heavyPackages = [
+        'onnxruntime-node',
+        '@huggingface/transformers',
+        'better-sqlite3',
+        'sharp',
+        'canvas'
+      ];
+      
+      config.externals = [
+        ...config.externals,
+        ...heavyPackages,
+        // Also exclude any imports of these packages
+        ({ request }, callback) => {
+          if (heavyPackages.some(pkg => request?.includes(pkg))) {
+            return callback(null, `commonjs ${request}`);
+          }
+          callback();
+        }
+      ];
     }
 
     return config;

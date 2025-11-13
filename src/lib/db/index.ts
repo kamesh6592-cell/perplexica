@@ -16,15 +16,24 @@ if (!fs.existsSync(dataDir)) {
 let sqlite: Database.Database;
 let db: any;
 
-try {
-  sqlite = new Database(dbPath);
-  db = drizzle(sqlite, {
-    schema: schema,
-  });
-} catch (error) {
-  // During build time, we might not have access to create the database
-  // Create a mock db object for build compatibility
-  console.warn('Database initialization failed during build, using mock:', error);
+// On Vercel, don't try to initialize SQLite at all
+if (process.env.VERCEL) {
+  console.warn('Running on Vercel, using mock database');
+} else {
+  try {
+    sqlite = new Database(dbPath);
+    db = drizzle(sqlite, {
+      schema: schema,
+    });
+  } catch (error) {
+    // During build time, we might not have access to create the database
+    // Create a mock db object for build compatibility
+    console.warn('Database initialization failed during build, using mock:', error);
+  }
+}
+
+// Create mock db if not initialized
+if (!db) {
   db = {
     query: {
       chats: {
