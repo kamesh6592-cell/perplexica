@@ -8,15 +8,13 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['pdf-parse'],
-  experimental: {
-    serverComponentsExternalPackages: [
-      'onnxruntime-node',
-      '@huggingface/transformers',
-      'sharp',
-      'canvas',
-    ],
-  },
+  serverExternalPackages: [
+    'pdf-parse',
+    'onnxruntime-node',
+    '@huggingface/transformers',
+    'sharp',
+    'canvas',
+  ],
   webpack: (config, { isServer, dev }) => {
     // Reduce bundle size for client-side
     if (!isServer) {

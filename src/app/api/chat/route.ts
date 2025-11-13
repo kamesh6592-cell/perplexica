@@ -182,7 +182,16 @@ const handleHistorySave = async (
     where: eq(chats.id, message.chatId),
   });
 
-  const fileData = files.map(getFileDetails);
+  // Only process file details if files exist and we're not in build mode
+  let fileData: ReturnType<typeof getFileDetails>[] = [];
+  if (files.length > 0 && process.env.NODE_ENV !== 'build') {
+    try {
+      fileData = files.map(getFileDetails);
+    } catch (error) {
+      console.warn('Error processing file details:', error);
+      fileData = [];
+    }
+  }
 
   if (!chat) {
     await db
@@ -198,7 +207,7 @@ const handleHistorySave = async (
   } else if (JSON.stringify(chat.files ?? []) != JSON.stringify(fileData)) {
     db.update(chats)
       .set({
-        files: files.map(getFileDetails),
+        files: fileData,
       })
       .where(eq(chats.id, message.chatId));
   }
