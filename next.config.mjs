@@ -46,26 +46,55 @@ const nextConfig = {
 
     // Aggressive optimization for Vercel deployment
     if (process.env.VERCEL && isServer) {
-      // Exclude all heavy packages from server bundle on Vercel
+      // Exclude ALL heavy packages from server bundle on Vercel
       const heavyPackages = [
         'onnxruntime-node',
         '@huggingface/transformers',
         'better-sqlite3',
         'sharp',
-        'canvas'
+        'canvas',
+        'pdf-parse',
+        'mammoth',
+        'jspdf',
+        '@langchain/community/document_loaders',
+        '@langchain/community/embeddings/huggingface_transformers'
       ];
       
+      // More aggressive externalization
       config.externals = [
         ...config.externals,
-        ...heavyPackages,
-        // Also exclude any imports of these packages
+        // Externalize heavy packages completely
+        ...heavyPackages.map(pkg => ({ [pkg]: `commonjs ${pkg}` })),
+        // Dynamic exclusion for any imports containing these packages
         ({ request }, callback) => {
-          if (heavyPackages.some(pkg => request?.includes(pkg))) {
+          if (request && heavyPackages.some(pkg => request.includes(pkg))) {
+            return callback(null, `commonjs ${request}`);
+          }
+          // Also exclude node_modules with these patterns
+          if (request && (
+            request.includes('onnxruntime') || 
+            request.includes('transformers') || 
+            request.includes('sqlite') ||
+            request.includes('pdf-parse') ||
+            request.includes('mammoth') ||
+            request.includes('jspdf')
+          )) {
             return callback(null, `commonjs ${request}`);
           }
           callback();
         }
       ];
+      
+      // Override resolve to prevent loading these modules
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'onnxruntime-node': false,
+        '@huggingface/transformers': false,
+        'better-sqlite3': false,
+        'pdf-parse': false,
+        'mammoth': false,
+        'jspdf': false,
+      };
     }
 
     return config;

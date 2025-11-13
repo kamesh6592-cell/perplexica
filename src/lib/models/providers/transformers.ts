@@ -3,20 +3,31 @@ import { Model, ModelList, ProviderMetadata } from '../types';
 import BaseModelProvider from './baseProvider';
 import { Embeddings } from '@langchain/core/embeddings';
 import { UIConfigField } from '@/lib/config/types';
-import { getConfiguredModelProviderById } from '@/lib/config/serverRegistry';
 
-// Conditional import for HuggingFaceTransformersEmbeddings
+// Mock embeddings class for Vercel deployment
+class MockEmbeddings extends Embeddings {
+  constructor() {
+    super({});
+  }
+  
+  async embedDocuments(texts: string[]): Promise<number[][]> {
+    throw new Error('Local transformers are not available in cloud deployment. Please use OpenAI or other cloud-based embedding providers.');
+  }
+  
+  async embedQuery(text: string): Promise<number[]> {
+    throw new Error('Local transformers are not available in cloud deployment. Please use OpenAI or other cloud-based embedding providers.');
+  }
+}
+
+// Completely disable transformers on Vercel
 let HuggingFaceTransformersEmbeddings: any = null;
-
-// Only try to import on non-Vercel environments
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && !process.env.NEXT_PHASE) {
   try {
-    // This will fail on Vercel but work locally
-    HuggingFaceTransformersEmbeddings = require('@langchain/community/embeddings/huggingface_transformers').HuggingFaceTransformersEmbeddings;
+    // Only import on local development
+    const transformersModule = await import('@langchain/community/embeddings/huggingface_transformers');
+    HuggingFaceTransformersEmbeddings = transformersModule.HuggingFaceTransformersEmbeddings;
   } catch (error) {
-    // Fallback for environments where transformers are not available
     console.warn('HuggingFace Transformers not available in this environment');
-    HuggingFaceTransformersEmbeddings = null;
   }
 }
 interface TransformersConfig {}
@@ -68,6 +79,11 @@ class TransformersProvider extends BaseModelProvider<TransformersConfig> {
   }
 
   async loadEmbeddingModel(key: string): Promise<Embeddings> {
+    // Always return mock embeddings on Vercel
+    if (process.env.VERCEL || process.env.NEXT_PHASE) {
+      return new MockEmbeddings();
+    }
+
     const modelList = await this.getModelList();
     const exists = modelList.embedding.find((m) => m.key === key);
 
@@ -79,14 +95,17 @@ class TransformersProvider extends BaseModelProvider<TransformersConfig> {
 
     // Check if transformers are available in this environment
     if (!HuggingFaceTransformersEmbeddings) {
-      throw new Error(
-        'Transformers embedding models are not available in this deployment environment. Please use a different embedding provider like OpenAI.',
-      );
+      return new MockEmbeddings();
     }
 
-    return new HuggingFaceTransformersEmbeddings({
-      model: key,
-    });
+    try {
+      return new HuggingFaceTransformersEmbeddings({
+        model: key,
+      });
+    } catch (error) {
+      console.warn('Failed to load transformers model, using mock:', error);
+      return new MockEmbeddings();
+    }
   }
 
   static parseAndValidate(raw: any): TransformersConfig {

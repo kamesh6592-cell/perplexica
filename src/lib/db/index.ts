@@ -1,8 +1,17 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
+// Conditional imports - only load SQLite on non-Vercel environments
+let drizzle: any, Database: any;
 import * as schema from './schema';
 import path from 'path';
 import fs from 'fs';
+
+if (!process.env.VERCEL && !process.env.NEXT_PHASE) {
+  try {
+    drizzle = require('drizzle-orm/better-sqlite3').drizzle;
+    Database = require('better-sqlite3').default || require('better-sqlite3');
+  } catch (error) {
+    console.warn('SQLite dependencies not available, using mock database');
+  }
+}
 
 const DATA_DIR = process.env.DATA_DIR || process.cwd();
 const dbPath = path.join(DATA_DIR, './data/db.sqlite');

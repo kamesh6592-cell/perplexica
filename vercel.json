@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "yarn build:vercel",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": ".next",
-  "installCommand": "yarn install --frozen-lockfile",
+  "installCommand": "npm install --production --no-optional --ignore-optional",
   "functions": {
     "src/app/api/**/*.ts": {
       "maxDuration": 60
@@ -16,6 +16,7 @@
   ],
   "env": {
     "SKIP_ENV_VALIDATION": "1",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VERCEL": "1"
   }
 }

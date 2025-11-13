@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
-import { DocxLoader } from '@langchain/community/document_loaders/fs/docx';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { Document } from '@langchain/core/documents';
-import ModelRegistry from '@/lib/models/registry';
+
+// Conditional imports for non-Vercel environments only
+let fs: any, path: any, crypto: any, PDFLoader: any, DocxLoader: any, RecursiveCharacterTextSplitter: any, Document: any, ModelRegistry: any;
+
+if (!process.env.VERCEL) {
+  try {
+    fs = require('fs');
+    path = require('path');
+    crypto = require('crypto');
+    ({ PDFLoader } = require('@langchain/community/document_loaders/fs/pdf'));
+    ({ DocxLoader } = require('@langchain/community/document_loaders/fs/docx'));
+    ({ RecursiveCharacterTextSplitter } = require('@langchain/textsplitters'));
+    ({ Document } = require('@langchain/core/documents'));
+    ModelRegistry = require('@/lib/models/registry').default;
+  } catch (error) {
+    console.warn('Document processing dependencies not available');
+  }
+}
 
 interface FileRes {
   fileName: string;
