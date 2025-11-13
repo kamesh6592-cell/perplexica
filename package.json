@@ -5,10 +5,13 @@
   "author": "ItzCrazyKns",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "SKIP_ENV_VALIDATION=1 next build",
+    "build:vercel": "yarn install --frozen-lockfile --production=false && SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "next lint",
-    "format:write": "prettier . --write"
+    "format:write": "prettier . --write",
+    "test:config": "node scripts/test-config.js",
+    "postinstall": "node -e \"try { require('better-sqlite3') } catch (e) { console.log('Note: better-sqlite3 not available in this environment') }\""
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

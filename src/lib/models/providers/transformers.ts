@@ -4,7 +4,17 @@ import BaseModelProvider from './baseProvider';
 import { Embeddings } from '@langchain/core/embeddings';
 import { UIConfigField } from '@/lib/config/types';
 import { getConfiguredModelProviderById } from '@/lib/config/serverRegistry';
-import { HuggingFaceTransformersEmbeddings } from '@langchain/community/embeddings/huggingface_transformers';
+
+// Conditional import for HuggingFaceTransformersEmbeddings
+let HuggingFaceTransformersEmbeddings: any;
+try {
+  // This will fail on Vercel but work locally
+  HuggingFaceTransformersEmbeddings = require('@langchain/community/embeddings/huggingface_transformers').HuggingFaceTransformersEmbeddings;
+} catch (error) {
+  // Fallback for environments where transformers are not available
+  console.warn('HuggingFace Transformers not available in this environment');
+  HuggingFaceTransformersEmbeddings = null;
+}
 interface TransformersConfig {}
 
 const defaultEmbeddingModels: Model[] = [
@@ -59,7 +69,14 @@ class TransformersProvider extends BaseModelProvider<TransformersConfig> {
 
     if (!exists) {
       throw new Error(
-        'Error Loading OpenAI Embedding Model. Invalid Model Selected.',
+        'Error Loading Transformers Embedding Model. Invalid Model Selected.',
+      );
+    }
+
+    // Check if transformers are available in this environment
+    if (!HuggingFaceTransformersEmbeddings) {
+      throw new Error(
+        'Transformers embedding models are not available in this deployment environment. Please use a different embedding provider like OpenAI.',
       );
     }
 

@@ -29,7 +29,21 @@ class GroqProvider extends BaseModelProvider<GroqConfig> {
   }
 
   async getDefaultModels(): Promise<ModelList> {
+    // Fallback models in case API is not accessible
+    const fallbackModels: Model[] = [
+      { name: 'Mixtral 8x7B', key: 'mixtral-8x7b-32768' },
+      { name: 'LLaMA3 70B', key: 'llama3-70b-8192' },
+      { name: 'LLaMA3 8B', key: 'llama3-8b-8192' },
+      { name: 'Gemma 7B', key: 'gemma-7b-it' },
+      { name: 'LLaMA3 Groq 70B Tool Use', key: 'llama3-groq-70b-8192-tool-use-preview' },
+      { name: 'LLaMA3 Groq 8B Tool Use', key: 'llama3-groq-8b-8192-tool-use-preview' },
+    ];
+
     try {
+      if (!this.config.apiKey) {
+        throw new Error('Groq API key is required');
+      }
+
       const res = await fetch('https://api.groq.com/openai/v1/models', {
         method: 'GET',
         headers: {
@@ -38,27 +52,40 @@ class GroqProvider extends BaseModelProvider<GroqConfig> {
         },
       });
 
-      const data = await res.json();
-
-      const models: Model[] = data.data.map((m: any) => {
-        return {
-          name: m.id,
-          key: m.id,
-        };
-      });
-
-      return {
-        embedding: [],
-        chat: models,
-      };
-    } catch (err) {
-      if (err instanceof TypeError) {
-        throw new Error(
-          'Error connecting to Groq API. Please ensure your API key is correct and the Groq service is available.',
-        );
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Invalid Groq API key. Please check your API key in settings.');
+        }
+        throw new Error(`Groq API error: ${res.status} ${res.statusText}`);
       }
 
-      throw err;
+      const data = await res.json();
+
+      if (data.data && Array.isArray(data.data)) {
+        const models: Model[] = data.data.map((m: any) => ({
+          name: m.id,
+          key: m.id,
+        }));
+
+        return {
+          embedding: [],
+          chat: models,
+        };
+      }
+
+      // Fallback to default models if API response is unexpected
+      return {
+        embedding: [],
+        chat: fallbackModels,
+      };
+    } catch (err) {
+      console.warn('Failed to fetch Groq models from API, using fallback models:', err);
+      
+      // Return fallback models for better user experience
+      return {
+        embedding: [],
+        chat: fallbackModels,
+      };
     }
   }
 

@@ -1,0 +1,36 @@
+# Directories
+.next/
+node_modules/
+.git/
+.github/
+docs/
+.assets/
+
+# Files
+*.log
+*.md
+README.md
+CONTRIBUTING.md
+LICENSE
+.gitignore
+.dockerignore
+.prettierignore
+.prettierrc.js
+.eslintrc.json
+
+# Docker files
+Dockerfile
+Dockerfile.slim
+docker-compose.yaml
+entrypoint.sh
+
+# Development files
+.env.local
+.env.development
+.env.test
+
+# Large dependencies that cause deployment issues
+node_modules/onnxruntime-node/
+node_modules/@huggingface/transformers/
+uploads/
+data/

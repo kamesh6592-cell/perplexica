@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "buildCommand": "yarn build:vercel",
+  "outputDirectory": ".next",
+  "installCommand": "yarn install --frozen-lockfile",
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ],
+  "env": {
+    "SKIP_ENV_VALIDATION": "1",
+    "NODE_ENV": "production"
+  }
+}
